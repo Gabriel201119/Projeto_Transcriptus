@@ -1,151 +1,174 @@
-const fs = require("fs");
 const axios = require("axios");
 const dayjs = require("dayjs");
-const wordDetails = require("./wordDetails.controller");
 const dictionary = require("./dictionary.controller");
+const { translate } = require("bing-translate-api");
+const fs = require("fs").promises;
+const path = require("path");
 
-// Check if there is a definition in the dictionary
-async function hasDefinition(word) {
+// Cache da palavra diária
+const DAILY_WORD_CACHE_FILE = path.join(__dirname, "../dailyWord.json");
+
+// Verifica se a palavra do dia já foi gerada hoje
+async function getCachedDailyWord() {
   try {
-    const response = await axios.get(
-      `https://api.dictionaryapi.dev/api/v2/entries/en/${word}`
-    );
-
-    // Verifica se há pelo menos uma definição para a palavra
-    return response.data.length > 0;
+    const data = await fs.readFile(DAILY_WORD_CACHE_FILE, 'utf8');
+    const cached = JSON.parse(data);
+    const today = dayjs().format("YYYY/MM/DD");
+    
+    if (cached.date === today && cached.dailyWord && cached.definition) {
+      console.log(`✓ Usando palavra do dia em cache: "${cached.dailyWord}"`);
+      return cached;
+    }
+    
+    return null;
   } catch (error) {
-    console.error("An error occurred:", error.response.data);
-    return false; // Retorna false em caso de erro
+    console.log("Cache da palavra diária não encontrado ou inválido");
+    return null;
   }
 }
 
-// Generate random word
-const generateRandomWordtoDailyWord = async () => {
+// Salva a palavra do dia no cache
+async function saveDailyWordToCache(dailyWordData) {
   try {
-    const today = dayjs().format("YYYY/MM/DD");
-    const randomWord = await dictionary.generateRandomWord();
-    const definition = await getWordInfo(randomWord);
-
-    const dailyWord = {
-      date: today,
-      dailyWord: randomWord,
-      definition: definition?.definition || "Definition not available"
-    };
-
-    fs.writeFileSync("dailyWord.json", JSON.stringify(dailyWord, null, 2));
-    return dailyWord;
+    await fs.writeFile(DAILY_WORD_CACHE_FILE, JSON.stringify(dailyWordData, null, 2));
+    console.log(`✓ Palavra do dia salva no cache: "${dailyWordData.dailyWord}"`);
   } catch (error) {
-    console.error("Erro ao gerar palavra diária:", error);
-    throw error;
+    console.error("Erro ao salvar palavra do dia no cache:", error);
   }
-};
+}
 
-// Generate JSON about word info
+// Busca informações da palavra na API externa
 async function getWordInfo(word) {
   try {
     const response = await axios.get(
-      `https://api.dictionaryapi.dev/api/v2/entries/en/${word}`
+      `https://api.dictionaryapi.dev/api/v2/entries/en/${word}`,
+      { timeout: 5000 } // Timeout de 5 segundos
     );
     return response.data;
   } catch (error) {
-    console.error("An error occurred:", error.response.data);
-    return error;
+    // Só loga erros que não sejam 404 (palavra não encontrada)
+    if (error.response && error.response.status === 404) {
+      // Palavra não encontrada - não é um erro crítico
+      return null;
+    } else if (error.code === 'ECONNABORTED' || error.code === 'ENOTFOUND') {
+      // Problemas de conexão - loga apenas uma vez
+      console.warn("Problema de conexão com API de dicionário:", error.message);
+      return null;
+    } else {
+      // Outros erros - loga apenas uma vez
+      console.warn("Erro ao buscar informações da palavra:", error.message);
+      return null;
+    }
   }
 }
 
-// Get phonetic notation of the word
-async function getPhonetic(dailyWordJson) {
-  try {
-    let phoneticNotation;
-    await dailyWordJson[0].phonetics.forEach((element) => {
-      if (element.text !== undefined) {
-        phoneticNotation = element.text;
-      }
-    });
-    return phoneticNotation;
-  } catch (error) {
-    console.error("An error occurred:", error.response.data);
-    throw error;
-  }
-}
-
-// Generate definition of the word
+// Pega definição da palavra
 async function getDefinition(wordInfoJson) {
-  let definitions;
+  if (!wordInfoJson || !Array.isArray(wordInfoJson)) return null;
   try {
-    definitions = wordInfoJson[0]?.meanings?.flatMap((meaning) =>
+    const definitions = wordInfoJson[0]?.meanings?.flatMap((meaning) =>
       meaning.definitions.map((definition) => definition.definition)
     );
+    return definitions?.[0] || null;
   } catch (error) {
-    console.error("An error occurred during the request:", error);
-  }
-
-  if (definitions && definitions.length > 0) {
-    return definitions[0];
-  } else {
-    console.log("No definition found for the word:", word);
+    console.error("Erro ao obter definição:", error);
     return null;
   }
 }
 
-// Fetch all information of the Word of the Day
-async function fetchDailyWordInfo() {
-  // Generating information of the word of the day
-  const dailyWord = await generateRandomWordtoDailyWord();
-  const dailyWordJson = await getWordInfo(dailyWord);
-  const definition = await getDefinition(dailyWordJson);
-  const phonetic = await getPhonetic(dailyWordJson);
-
-  return {
-    dailyWord: dailyWord,
-    definition: definition,
-    phonetic: phonetic,
-  };
-}
-
-// Generate new word of the day
-async function generateNewDailyWord(dateToday) {
-  const newWordDaily = await fetchDailyWordInfo();
-  const newWordDailyObject = {
-    date: dateToday,
-    dailyWord: newWordDaily.dailyWord,
-    definition: newWordDaily.definition,
-    phonetic: newWordDaily.phonetic,
-  };
-  // Converting to JSON
-  const jsonNewWordDaily = JSON.stringify(newWordDailyObject, null, 2);
-  return jsonNewWordDaily;
-}
-
-// Check if details of the file are valid (where the daily word will be stored)
-const fileIsValid = (filePath) => {
+// Traduz definição para português
+async function translateDefinition(definition) {
+  if (!definition) return null;
   try {
-    return fs.existsSync(filePath) && fs.statSync(filePath).size !== 0;
+    const result = await translate(definition, null, 'pt');
+    return result.translation;
   } catch (error) {
-    console.error("Error checking file validity:", error);
-    return false;
-  }
-};
-
-// Check if the file date is today's date
-function dateIsToday(dateToday, wordInfoJson) {
-  return dateToday === wordInfoJson.date;
-}
-
-// Get the daily word info
-async function getDailyWordInfo() {
-  try {
-    const data = fs.readFileSync("dailyWord.json", "utf8");
-    return JSON.parse(data);
-  } catch (error) {
-    console.error("Erro ao ler arquivo dailyWord.json:", error);
+    console.warn("Erro ao traduzir definição:", error.message);
     return null;
+  }
+}
+
+// Gera palavra aleatória do dia com fonética e definição
+async function generateRandomWordtoDailyWord() {
+  try {
+    // 1. Verifica se já existe palavra do dia em cache
+    const cachedWord = await getCachedDailyWord();
+    if (cachedWord) {
+      return cachedWord;
+    }
+
+    console.log("🔄 Gerando nova palavra do dia...");
+    const today = dayjs().format("YYYY/MM/DD");
+    let randomWord, phonetic, definition, translatedDefinition;
+
+    let attempts = 3; // Reduzido para 3 tentativas para melhor performance
+    let foundValidWord = false;
+
+    while (attempts > 0 && !foundValidWord) {
+      try {
+        // 1. Gera palavra aleatória do ipadict
+        randomWord = dictionary.generateRandomWord();
+
+        // 2. Busca fonética do ipadict
+        const [ipaSymbols, phoneticTranscription] =
+          await dictionary.getDetailsOfTranscription(randomWord.toLowerCase());
+        phonetic = phoneticTranscription || ipaSymbols || "Phonetic not available";
+
+        // 3. Busca definição via API
+        const wordInfoJson = await getWordInfo(randomWord);
+        definition = await getDefinition(wordInfoJson);
+
+        if (definition) {
+          // 4. Traduz definição para português
+          translatedDefinition = await translateDefinition(definition);
+          foundValidWord = true;
+          console.log(`✓ Palavra do dia gerada: "${randomWord}"`);
+        } else {
+          console.log(`⚠ Palavra "${randomWord}" não encontrada na API, tentando outra...`);
+        }
+      } catch (error) {
+        console.log(`⚠ Erro ao processar palavra "${randomWord}":`, error.message);
+      }
+      
+      attempts--;
+    }
+
+    // fallback caso não consiga encontrar definição
+    if (!foundValidWord) {
+      console.log("⚠ Usando palavra padrão devido a falhas na API");
+      randomWord = "welcome";
+      definition = "An expression of greeting";
+      phonetic = "/ˈwelkəm/";
+      translatedDefinition = "Uma expressão de cumprimento";
+    }
+
+    const dailyWordData = {
+      date: today,
+      dailyWord: randomWord,
+      definition,
+      phonetic,
+      translatedDefinition,
+    };
+
+    // Salva no cache para próximas requisições do dia
+    await saveDailyWordToCache(dailyWordData);
+
+    return dailyWordData;
+  } catch (error) {
+    console.error("Erro ao gerar palavra diária:", error);
+    return {
+      date: dayjs().format("YYYY/MM/DD"),
+      dailyWord: "welcome",
+      definition: "An expression of greeting",
+      phonetic: "/ˈwelkəm/",
+      translatedDefinition: "Uma expressão de cumprimento",
+    };
   }
 }
 
 module.exports = {
   generateRandomWordtoDailyWord,
-  getDailyWordInfo,
   getWordInfo,
-  getPhonetic,
+  getDefinition,
+  translateDefinition,
 };

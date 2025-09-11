@@ -1,108 +1,462 @@
 <%- include("./partials/header.ejs") %>
-  <%- include("./partials/navbar.ejs") %>
+<%- include("./partials/navbar.ejs") %>
 
-    <body>
-      <hr />
-      <div class="container">
-        <div class="card info-word">
-          <div class="row">
-            <div class="col-md-30">
-
-              <b class="word" id="word-text">
-                <%= wordInfo.word %>
-              </b> [ <%= wordInfo.ipa %> ] <i>
-                  <%= wordInfo.pronounce %>
-                </i> <i class="bi bi-volume-up-fill" onclick="audio.play()" id="player-audio"
-                  style="font-size: 1.8em;"></i>
-                <p>Traduções da palavra <%= wordInfo.word %>
-                </p>
-                <div class="card-body">
-                  <ul>
-                    <% wordInfo.translation.forEach(function(word){ %>
-                      <button class="btn translation-button">
-                        <%= word %><br />
-                      </button>
-                      <% }) %>
-                  </ul>
-                </div>
+<body>
+  <div class="container my-5">
+    <div class="row justify-content-center">
+      <div class="col-md-8">
+        <div class="card info-word shadow-sm border-0">
+          <div class="card-body">
+            <div class="d-flex align-items-center mb-3">
+              <h1 class="word-display me-2"><b class="word" id="word-text"><%= wordInfo.word %></b></h1>
+              <span class="pronunciation-details">
+                [ <%= wordInfo.ipa %> ]
+                <i class="bi bi-volume-up-fill audio-icon" onclick="audio.play()" id="player-audio"></i>
+              </span>
             </div>
-          </div>
-          <div class="row">
-            <div class="col-md-30">
-              <h3>Frases de Contexto</h3>
-              <hr>
-              <div class="card-body">
-                <% wordInfo.phrases.forEach(function(phrase) { %>
-                  <div class="row">
-                    <div class="col-sm-6">
-                      <%- phrase.english.replace(wordInfo.word, `<mark class="highlight">${wordInfo.word}</mark>`) %>
-                    </div>
-                    <div class="col-sm-6">
-                      <%= phrase.portuguese %>
-                    </div>
-                  </div>
-                  <hr class="hr-dashed" />
-                  <% }); %>
-              </div>
-              <br>
+            
+            <p class="text-muted mb-3">Traduções da palavra <%= wordInfo.word %></p>
+            <div class="d-flex flex-wrap translation-buttons-container">
+              <ul>
+                <% wordInfo.translation.forEach(function(word){ %>
+                <button class="btn btn-sm translation-button me-2 mb-2"><%= word %><br /></button>
+                <% }) %>
+              </ul>
             </div>
           </div>
         </div>
-        <br><br>
+
+        <div class="card info-word shadow-sm border-0 mt-4">
+          <div class="card-body">
+            <h3 class="section-title">Frases de Contexto</h3>
+            <div class="context-container">
+              <div class="row text-center mb-3">
+                <div class="col-6">
+                  <img src="/img/eua-icon.svg" width="24" height="24" alt="Ícone Inglês" class="flag-icon mb-1" />
+                  <span class="language-label"><strong>Inglês</strong></span>
+                </div>
+                <div class="col-6">
+                  <img src="/img/brazil-icon.svg" width="24" height="24" alt="Ícone Português" class="flag-icon mb-1" />
+                  <span class="language-label"><strong>Português</strong></span>
+                </div>
+              </div>
+              
+              <% wordInfo.phrases.forEach(function(phrase, index) { %>
+              <div class="row mb-3 phrase-box">
+                <div class="col-sm-6">
+                  <p class="english-phrase">
+                    <%- phrase.english.replace(wordInfo.word, `<mark class="highlight">${wordInfo.word}</mark>`) %>
+                  </p>
+                </div>
+                <div class="col-sm-6 d-flex align-items-center">
+                  <span class="arrow-label me-2">→</span>
+                  <p class="portuguese-phrase mb-0"><%= phrase.portuguese %></p>
+                </div>
+                <div class="col-sm-12 mt-2">
+                  <button class="btn btn-primary practice-mic-button open-pronunciation-modal"
+                    data-index="<%= index %>" data-phrase="<%= phrase.english %>">
+                    <i class="bi bi-mic-fill"></i> Praticar
+                  </button>
+                  <span id="status-<%= index %>" class="ms-3"></span>
+                </div>
+                <div class="col-sm-12 mt-2">
+                  <div id="progress-<%= index %>" class="progress d-none">
+                    <div class="progress-bar" role="progressbar" style="width: 0%"></div>
+                  </div>
+                  <div id="result-<%= index %>" class="practice-result mt-2"></div>
+                  <div class="practice-feedback d-none"></div>
+                </div>
+                <hr class="hr-dashed" />
+              </div>
+              <% }); %>
+            </div>
+          </div>
+        </div>
+
+        <div class="card shadow-sm border-0 mt-4">
+          <div class="card-body pronunciation-check">
+            <h4 class="mb-3">Pratique sua Pronúncia</h4>
+            <div class="d-flex align-items-center gap-3">
+              <button id="startRecording" class="btn btn-primary">
+                <i class="bi bi-mic-fill"></i> Gravar Pronúncia
+              </button>
+              <button id="stopRecording" class="btn btn-danger d-none">
+                <i class="bi bi-stop-fill"></i> Parar
+              </button>
+              <div id="recordingStatus" class="ms-3"></div>
+            </div>
+            <div id="resultArea" class="mt-3">
+              <div class="progress mb-2 d-none">
+                <div class="progress-bar" role="progressbar" style="width: 0%"></div>
+              </div>
+              <p id="pronunciationResult" class="mt-2"></p>
+            </div>
+          </div>
+        </div>
+
       </div>
-      <style>
-        .info-word {
-          background-color: white;
-        }
+    </div>
+  </div>
 
-        .translation-button {
-          background-color: #E2ECFF;
-          margin-right: 10px;
-          margin-bottom: 10px;
-        }
-
-        .translation-button:hover {
-          color: white;
-          background-color: #0970AC;
-        }
-
-        #player-audio:hover {
-          color: #0970AC;
-        }
-
-        .hr-dashed {
-          border-top: 3px dashed black;
-        }
-
-        .word {
-          font-size: 40px;
-        }
-
-        .highlight {
-          background-color: #FCEC17;
-        }
-      </style>
-      <script>
-        const audio = new Audio()
-        audio.src = "<%= wordInfo.audio  %>"
-      </script>
-      <div class="pronunciation-check mt-4">
-        <h4>Pratique sua Pronúncia</h4>
-        <div class="d-flex align-items-center gap-3">
-          <button id="startRecording" class="btn btn-primary">
+  <div class="modal fade" id="pronunciationModal" tabindex="-1" aria-labelledby="pronunciationModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="pronunciationModalLabel">
+            Praticar Pronúncia
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          <p id="modalPhrase" class="mb-3"></p>
+          <button id="modalStartRecording" class="btn btn-primary">
             <i class="bi bi-mic-fill"></i> Gravar Pronúncia
           </button>
-          <button id="stopRecording" class="btn btn-danger d-none">
+          <button id="modalStopRecording" class="btn btn-danger d-none">
             <i class="bi bi-stop-fill"></i> Parar
           </button>
-          <div id="recordingStatus" class="ms-3"></div>
-        </div>
-        <div id="resultArea" class="mt-3">
-          <div class="progress mb-2 d-none">
-            <div class="progress-bar" role="progressbar" style="width: 0%"></div>
-          </div>
-          <p id="pronunciationResult" class="mt-2"></p>
+          <div id="modalRecordingStatus" class="ms-3 mt-2"></div>
+          <div id="modalResult" class="mt-3"></div>
         </div>
       </div>
-      <script src="/js/speechRecognition.js"></script>
-      <%- include("./partials/footer.ejs") %>
+    </div>
+  </div>
+
+  <style>
+/* Geral e Card Base */
+body {
+  font-family: 'Poppins', sans-serif; /* Fonte mais moderna */
+  background-color: #f8f9fa; /* Fundo mais suave */
+  color: #343a40; /* Cor de texto padrão mais escura */
+}
+
+.card {
+  border-radius: 12px; /* Cantos mais arredondados para cards */
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08); /* Sombra mais suave e elegante */
+  transition: transform 0.2s ease-in-out;
+}
+
+.card:hover {
+  transform: translateY(-3px); /* Leve elevação ao passar o mouse */
+}
+
+/* Título Principal da Palavra */
+.word-display {
+  font-size: 3rem; /* Tamanho maior para a palavra principal */
+  font-weight: 700; /* Mais negrito */
+  color: #2c3e50; /* Cor escura e forte */
+}
+
+.pronunciation-details {
+  font-family: 'Roboto Mono', monospace; /* Fonte monoespaçada para IPA */
+  font-size: 1.3rem; /* Tamanho para a transcrição fonética */
+  color: #7f8c8d; /* Cinza suave */
+  display: flex;
+  align-items: center;
+  margin-left: 1rem;
+}
+
+.audio-icon {
+  font-size: 1.8em !important; /* Tamanho do ícone de áudio */
+  color: #3498db; /* Cor azul vibrante */
+  cursor: pointer;
+  margin-left: 0.5rem;
+  transition: color 0.2s ease-in-out;
+}
+
+.audio-icon:hover {
+  color: #2980b9; /* Cor mais escura no hover */
+}
+
+/* Seção de Traduções */
+.text-muted {
+  font-size: 1.05rem; /* Tamanho do texto "Traduções da palavra" */
+  color: #6c757d !important;
+}
+
+.translation-buttons-container ul {
+  list-style: none; /* Remove bolinhas da lista */
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem; /* Espaço entre os botões */
+}
+
+.translation-button {
+  background-color: #eaf3ff; /* Fundo azul claro */
+  color: #347eff; /* Texto azul mais forte */
+  border-radius: 25px; /* Mais arredondado (estilo pílula) */
+  padding: 0.6rem 1.2rem;
+  font-weight: 600;
+  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+  border: none; /* Remove a borda padrão */
+}
+
+.translation-button:hover {
+  background-color: #347eff; /* Fundo azul mais escuro no hover */
+  color: #ffffff; /* Texto branco no hover */
+  transform: translateY(-2px); /* Efeito de elevação */
+}
+
+/* Seção de Frases de Contexto */
+.section-title {
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 1.8rem;
+  border-bottom: 2px solid #e9ecef; /* Linha sutil para separar */
+  padding-bottom: 0.8rem;
+}
+
+.context-container {
+  padding: 0;
+}
+
+.phrase-box {
+  background-color: #fdfdfd; /* Fundo levemente diferente para cada frase */
+  border-radius: 10px;
+  padding: 1.2rem;
+  margin-bottom: 1.5rem !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+}
+
+.flag-icon {
+  filter: grayscale(10%); /* Deixa as bandeiras um pouco mais suaves */
+}
+
+.language-label {
+  font-weight: 600;
+  color: #555;
+  font-size: 0.95rem;
+}
+
+.english-phrase,
+.portuguese-phrase {
+  font-size: 1.1rem;
+  line-height: 1.7;
+  color: #333;
+}
+
+.arrow-label {
+  font-size: 1.8rem;
+  color: #95a5a6; /* Cinza neutro */
+  margin-right: 0.8rem;
+}
+
+.highlight {
+  background-color: #ffeaa7; /* Amarelo mais suave */
+  color: #333;
+  padding: 2px 5px;
+  border-radius: 5px;
+  font-weight: 600;
+}
+
+.hr-dashed {
+  border-top: 1px dashed #ced4da; /* Traço mais fino e claro */
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+}
+
+.practice-mic-button {
+  background-color: #007bff; /* Cor azul padrão do Bootstrap */
+  border-color: #007bff;
+  padding: 0.7rem 1.4rem;
+  font-size: 1rem;
+  border-radius: 8px;
+  transition: all 0.2s ease-in-out;
+}
+
+.practice-mic-button:hover {
+  background-color: #0056b3;
+  border-color: #0056b3;
+  transform: translateY(-1px);
+}
+
+/* Seção de Prática de Pronúncia (botão geral) */
+.pronunciation-check h4 {
+  font-size: 1.6rem;
+  color: #2c3e50;
+  margin-bottom: 1.5rem;
+}
+
+#startRecording {
+  background-color: #28a745; /* Verde para iniciar */
+  border-color: #28a745;
+  font-size: 1.1rem;
+  padding: 0.8rem 1.6rem;
+  border-radius: 8px;
+  transition: all 0.2s ease-in-out;
+}
+
+#startRecording:hover {
+  background-color: #218838;
+  border-color: #1e7e34;
+  transform: translateY(-1px);
+}
+
+#stopRecording {
+  background-color: #dc3545; /* Vermelho para parar */
+  border-color: #dc3545;
+  font-size: 1.1rem;
+  padding: 0.8rem 1.6rem;
+  border-radius: 8px;
+  transition: all 0.2s ease-in-out;
+}
+
+#stopRecording:hover {
+  background-color: #c82333;
+  border-color: #bd2130;
+  transform: translateY(-1px);
+}
+
+#recordingStatus {
+  font-size: 1.1rem;
+  color: #555;
+  font-style: italic;
+}
+
+.progress {
+  height: 8px;
+  border-radius: 4px;
+  background-color: #e0e0e0;
+}
+
+.progress-bar {
+  background-color: #3498db; /* Azul para a barra de progresso */
+}
+
+#pronunciationResult {
+  background-color: #f0f8ff; /* Fundo azul bem clarinho para o resultado */
+  border: 1px solid #cceeff;
+  border-radius: 8px;
+  padding: 1.2rem;
+  font-size: 1.1rem;
+  color: #2c3e50;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .word-display {
+    font-size: 2.2rem;
+  }
+  .pronunciation-details {
+    font-size: 1rem;
+  }
+  .audio-icon {
+    font-size: 1.4em !important;
+  }
+  .section-title {
+    font-size: 1.5rem;
+  }
+  .english-phrase, .portuguese-phrase {
+    font-size: 0.95rem;
+  }
+  .arrow-label {
+    font-size: 1.3rem;
+  }
+  .translation-button {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.9rem;
+  }
+  #startRecording, #stopRecording {
+    font-size: 1rem;
+    padding: 0.6rem 1.2rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .container.my-5 {
+    padding: 1rem;
+  }
+  
+  .col-md-8 {
+    width: 100%;
+  }
+  
+  .word-display {
+    font-size: 2.5rem;
+  }
+  
+  .pronunciation-details {
+    font-size: 1.1rem;
+  }
+  
+  .translation-buttons-container ul {
+    justify-content: center;
+  }
+  
+  .phrase-box {
+    padding: 1rem;
+  }
+  
+  .english-phrase, .portuguese-phrase {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .d-flex.align-items-center.mb-3 {
+    flex-direction: column;
+    align-items: flex-start !important;
+  }
+  .pronunciation-details {
+    margin-left: 0;
+    margin-top: 0.5rem;
+  }
+  .word-display {
+    font-size: 2rem;
+  }
+  .translation-buttons-container ul {
+    justify-content: center;
+  }
+  .phrase-box {
+    padding: 1rem;
+  }
+  .practice-mic-button {
+    width: 100%;
+    margin-top: 0.8rem;
+  }
+  
+  .col-sm-6 {
+    width: 100%;
+    margin-bottom: 1rem;
+  }
+  
+  .arrow-label {
+    display: none;
+  }
+  
+  .english-phrase, .portuguese-phrase {
+    font-size: 0.9rem;
+  }
+  
+  #startRecording, #stopRecording {
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+}
+  </style>
+
+<script>
+  const word = "<%= wordInfo.word %>";
+  const audio = new Audio(`/audio/${word}.mp3`);
+</script>
+  <script src="/js/speechRecognition.js"></script>
+  <script src="/js/phraseRecognition.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      new PhraseRecognition();
+    });
+  </script>
+  <script>
+    document.addEventListener("hidden.bs.modal", function (event) {
+      const backdrops = document.querySelectorAll(".modal-backdrop");
+      backdrops.forEach((backdrop) => backdrop.remove());
+      document.body.classList.remove("modal-open");
+      document.body.style = "";
+    });
+  </script>
+  <%- include("./partials/footer.ejs") %>
+</body>

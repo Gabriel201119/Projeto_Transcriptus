@@ -1,144 +1,181 @@
 <%- include("./partials/header.ejs") %>
-  <link rel="stylesheet" href="/css/main.css" />
-  <%- include("./partials/navbar.ejs") %>
+<link rel="stylesheet" href="/css/main.css" />
+<%- include("./partials/navbar.ejs") %>
 
-    <body>
-      <div class="main">
-        <div class="container my-3">
-          <div class="row">
-            <div class="col-md-9 mx-auto">
-              <div class="card border-0">
-                <div class="card-body border-0">
-                  <h3 class="text-center text-black mb-3">
-                    Domine a pronúncia de palavras em inglês
-                  </h3>
-                  <form method="POST" action="/text/save" class="text-center">
-                    <div class="form-group">
-                      <div class="input-group">
-                        <input type="search" class="form-control text-md text-input input-total-rounded" name="text"
-                          id="texto" placeholder="Digite uma palavra para obter mais informações" aria-label="Search"
-                          aria-describedby="search-addon" required />
-                        <button type="submit" class="btn btn-primary" data-mdb-ripple-init>
-                          <span class="spinner-border spinner-border-sm mr-2 d-none" role="status"
-                            aria-hidden="true"></span>
-                          <b><i class="bi bi-search btn-custom" id="search"></i></b>
-                        </button>
-                      </div>
-                    </div>
-                  </form>
-                  <!-- <p class="text-center lead text-black-80 mt-2">Quer saber informações de uma palavra em Inglês? O Transcriptus faz isso para você</p> -->
+<body>
+  <div class="main">
+    <div class="container my-5">
+      <div class="row">
+
+        <div class="col-lg-6 col-md-7">
+          <div class="card shadow-sm border-0 mb-4">
+            <div class="card-body">
+              <h3 class="text-center text-black mb-3">
+                Domine a pronúncia de palavras em inglês
+              </h3>
+              <form method="POST" action="/text/save" class="text-center" id="search-form">
+                <div class="input-group input-group-lg">
+                  <input type="search" class="form-control rounded-start" name="text" id="texto"
+                    placeholder="Digite uma palavra para obter mais informações" aria-label="Search" required />
+                  <button type="submit" class="btn btn-primary rounded-end" id="search-btn">
+                    <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                    <i class="bi bi-search" id="search-icon"></i>
+                  </button>
                 </div>
-                <% if (textError) { %>
-                  <div class="container">
-                    <div
-                      class="alert-danger d-flex justify-content-center text-center larger-text text-danger fs-5 animate__animated animate__fadeInUp"
-                      role="alert">
-                      <b><%- textError %></b>
-                    </div>
-                  </div>
-                <% } %>
-              </div>
-              <hr />
-              <h3 style="color: #021134">
-                <img src="/img/doubt.svg" width="30" height="30" alt="Ícone Inglês" />
-                O que é transcrição fonética?
-              </h3>
-              <p>
-                A transcrição fonética é uma forma de representar os sons da fala
-                usando símbolos específicos. É como se fosse uma espécie de
-                alfabeto, chamado Alfabeto Fonético Internacional (IPA), onde cada
-                som do inglês tem um símbolo próprio. E sabe o que é legal? No
-                Transcriptus, a gente também mostra uma versão mais relaxada, tipo
-                como se estivesse falando no nosso bom e velho português, pra você
-                ter uma ideia melhor de como pronunciar as palavras
-              </p>
-              <h3 style="color: #021134">
-                <img src="/img/doubt.svg" width="30" height="30" alt="Ícone Inglês" />
-                Por que você deve se preocupar com a pronúncia correta?
-              </h3>
-              <p>
-                A correta pronúncia desempenha um papel fundamental para aqueles que
-                estão aprendendo inglês. Ela é essencial para uma comunicação eficaz
-                no idioma. Se a sua pronúncia não estiver precisa, há o risco de ser
-                mal interpretado por outros ou encontrar dificuldades para fazer-se
-                entender. Mas olha só, você tá com sorte! Aqui é possível aprimorar
-                a pronúncia do inglês ouvindo e aprendendo a pronunciar as palavras
-                corretamente
-              </p>
+              </form>
             </div>
-            <div class="col-md-3">
-              <br><br>
-              <div class="card rounded-4 card-word-of-day">
-                <b class="text-center" style="font-size: 16px; text-transform: uppercase">
-                  Palavra do Dia
-                </b>
-                <div class="text-center" style="float: right;">
-                  <b id="word-of-the-day" class="word-day text-center">
-                    <%= dailyWordInfo ? dailyWordInfo.dailyWord : 'Loading...' %>
-                  </b>
-                  <span style="text-indent: 30px;">
-                    <%= dailyWordInfo ? dailyWordInfo.definition : 'Loading definition...' %>
-                  </span>
-                  <br>
-                  <i style="font-size: 20px;">
-                    <%= dailyWordInfo ? dailyWordInfo.phonetic : 'Loading phonetic...' %>
-                  </i><br>
-
-                </div>
-                <div class="card mt-3" style="float: right; border: 0.2px solid rgb(56, 53, 53);border-radius: 10px;">
-                  <div class="text-dark text-center">
-                    <h5><b>Sorteio de palavras</b></h5>
-                  </div>
-                  <div class="btn-group" style="display: flex; justify-content: center">
-                    <button id="output" class="border-0" onclick="copyToClipboard()" style="background-color: #f5f5f5">
-                      <i class="bi bi-dice-5-fill"></i>
-                      <i class="bi bi-dice-5-fill"></i>
-                      <i class="bi bi-dice-5-fill"></i>
-                      <i class="bi bi-dice-5-fill"></i>
-                      <i class="bi bi-dice-5-fill"></i>
-                      <i class="bi bi-dice-5-fill"></i>
-                    </button>
-                    <i class="bi bi-clipboard hidden" id="copyButton" onclick="copyToClipboard()"></i>
-                  </div>
-                  <div class="card-body">
-                    <form action="/random" method="post">
-                      <button class="btn btn-sm bg-primary text-white" id="raffle" style="
-                      padding: 10px 20px;
-                      font-size: 16px;
-                      border: 2px solid;
-                      width: 100%;
-                    ">
-                        <b>Sortear</b>
-                      </button>
-                    </form>
-                  </div>
-                </div>
+            <% if (textError) { %>
+            <div class="container px-4 pb-3">
+              <div class="alert alert-danger text-center animate__animated animate__fadeInUp" role="alert">
+                <b><%- textError %></b>
               </div>
             </div>
-
+            <% } %>
           </div>
 
+          <hr class="my-4" />
+
+          <div class="info-section mb-4">
+            <h3 class="text-primary mb-3">
+              <img src="/img/doubt.svg" width="30" height="30" alt="Ícone Inglês" class="me-2" />
+              O que é transcrição fonética?
+            </h3>
+            <p class="lead">
+              A transcrição fonética é uma forma de representar os sons da fala
+              usando símbolos específicos. É como se fosse uma espécie de
+              alfabeto, chamado Alfabeto Fonético Internacional (IPA), onde cada
+              som do inglês tem um símbolo próprio. No Transcriptus, também mostramos
+              uma versão mais relaxada, para você ter uma ideia melhor de como pronunciar
+              as palavras.
+            </p>
+          </div>
+
+          <div class="info-section">
+            <h3 class="text-primary mb-3">
+              <img src="/img/doubt.svg" width="30" height="30" alt="Ícone Inglês" class="me-2" />
+              Por que se preocupar com a pronúncia correta?
+            </h3>
+            <p class="lead">
+              A correta pronúncia desempenha um papel fundamental para aqueles que
+              estão aprendendo inglês. Ela é essencial para uma comunicação eficaz
+              no idioma. Se a sua pronúncia não estiver precisa, há o risco de ser
+              mal interpretado por outros ou encontrar dificuldades para fazer-se
+              entender. Aqui é possível aprimorar a pronúncia do inglês ouvindo e
+              aprendendo a pronunciar as palavras corretamente.
+            </p>
+          </div>
+        </div>
+
+        <div class="col-lg-5 col-md-5 offset-lg-1">
+          <div class="card card-word-of-day shadow-sm">
+            <div class="card-body">
+              <h5 class="card-title text-center text-uppercase fw-bold text-primary mb-4">Palavra do Dia</h5>
+
+              <div class="row align-items-center mb-3">
+                <div class="col-4 text-end">
+                  <strong class="info-label">Palavra:</strong>
+                </div>
+                <div class="col-8">
+                  <h3 id="word-of-the-day" class="word-display mb-0">
+                    <%= dailyWordInfo ? dailyWordInfo.dailyWord : 'Loading...' %>
+                  </h3>
+                </div>
+              </div>
+
+              <div class="row align-items-center mb-3">
+                <div class="col-4 text-end">
+                  <strong class="info-label">Pronúncia:</strong>
+                </div>
+                <div class="col-8">
+                  <i id="word-phonetic" class="phonetic-display d-block">
+                    <%= dailyWordInfo ? dailyWordInfo.phonetic : 'Loading phonetic...' %>
+                  </i>
+                </div>
+              </div>
+
+              <div class="card bg-light border-0 text-start p-3 mb-3">
+                <div class="row">
+                  <div class="col-12 mb-2">
+                    <strong class="info-label d-block mb-1">Definição:</strong>
+                    <span id="word-definition" class="definition-text d-block">
+                      <%= dailyWordInfo ? dailyWordInfo.definition : 'Loading definition...' %>
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <% if (dailyWordInfo && dailyWordInfo.translatedDefinition) { %>
+              <div class="card bg-light border-0 text-start p-3 mb-4">
+                <div class="row">
+                  <div class="col-12 mb-0">
+                    <strong class="info-label d-block mb-1">Tradução:</strong>
+                    <span id="word-translation" class="translation-text d-block">
+                      <%= dailyWordInfo.translatedDefinition %>
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <% } %>
+
+              <!-- Seção de Sorteio dentro do card da palavra do dia -->
+              <div class="text-center mt-4 pt-3 border-top">
+                <h6 class="text-primary mb-3">
+                  <strong>Sorteio de Palavras</strong>
+                </h6>
+                <form action="/random" method="post" class="d-grid gap-2">
+                  <button class="btn btn-lg btn-success fw-bold raffle-btn" id="raffle">
+                    <i class="bi bi-dice-5-fill me-2"></i>Sortear Palavra
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-      </div>
-      <script>
-        const copyToClipboard = async () => {
-          try {
-            const button = document.getElementById("output");
-            await navigator.clipboard.writeText(button.textContent);
+    </div>
+  </div>
 
-            const copyButton = document.getElementById("copyButton");
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const searchForm = document.getElementById('search-form');
+      const searchButton = document.getElementById('search-btn');
+      const searchIcon = document.getElementById('search-icon');
+      const spinner = searchButton.querySelector('.spinner-border');
+      const buttonText = searchButton.querySelector('i');
 
-            copyButton.classList.toggle("bi-clipboard-check-fill");
-            setTimeout(() => {
-              copyButton.classList.remove("bi-clipboard-check-fill");
-              copyButton.classList.add("bi-clipboard");
-            }, 4000);
-          } catch (err) {
-            console.error("Erro ao copiar!");
-          }
-        };
-      </script>
-      <script src="/js/random.js"></script>
-      <script src="/js/load.js"></script>
-    </body>
+      searchForm.addEventListener('submit', () => {
+        // Esconde o ícone da lupa e mostra o spinner
+        searchIcon.classList.add('d-none');
+        spinner.classList.remove('d-none');
+        // Desabilita o botão para evitar cliques duplos
+        searchButton.disabled = true;
+      });
+
+    });
+
+    const copyToClipboard = async () => {
+      try {
+        const wordToCopy = document.getElementById("word-of-the-day").textContent.trim();
+        await navigator.clipboard.writeText(wordToCopy);
+
+        const raffleButton = document.getElementById("raffle");
+        const originalText = raffleButton.innerHTML;
+        const originalClasses = raffleButton.className;
+
+        raffleButton.innerHTML = '<i class="bi bi-check-circle-fill me-2"></i> Copiado!';
+        raffleButton.classList.remove('btn-success');
+        raffleButton.classList.add('btn-info');
+
+        setTimeout(() => {
+          raffleButton.innerHTML = originalText;
+          raffleButton.className = originalClasses;
+        }, 2000);
+
+      } catch (err) {
+        console.error("Erro ao copiar!", err);
+      }
+    };
+  </script>
+  <script src="/js/random.js"></script>
+  <script src="/js/bootstrap.bundle.min.js"></script>
+</body>

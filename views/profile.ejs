@@ -1,0 +1,253 @@
+<%- include("./partials/header.ejs") %>
+<%- include("./partials/navbar.ejs") %>
+<link rel="stylesheet" href="/css/profile.css">
+
+<body>
+  <div class="profile-container">
+    <div class="container-fluid">
+      <div class="row justify-content-center">
+        <div class="col-lg-10 col-xl-8">
+          
+          <!-- Header do Perfil -->
+          <div class="profile-header">
+            <div class="profile-avatar">
+              <i class="bi bi-person-circle"></i>
+            </div>
+            <div class="profile-info">
+              <h1 class="profile-name"><%= user.name %></h1>
+              <p class="profile-email"><%= user.email %></p>
+              <span class="profile-badge">
+                <i class="bi bi-award me-1"></i>
+                Membro desde <%= new Date(user.createdAt).toLocaleDateString('pt-BR') %>
+              </span>
+            </div>
+            <div class="profile-actions">
+              <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editProfileModal">
+                <i class="bi bi-pencil me-1"></i>
+                Editar Perfil
+              </button>
+            </div>
+          </div>
+
+          <!-- Estatísticas -->
+          <div class="stats-section">
+            <div class="row">
+              <div class="col-md-4">
+                <div class="stat-card">
+                  <div class="stat-icon">
+                    <i class="bi bi-translate"></i>
+                  </div>
+                  <div class="stat-content">
+                    <h3 id="totalTranslations">0</h3>
+                    <p>Traduções</p>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="stat-card">
+                  <div class="stat-icon">
+                    <i class="bi bi-book"></i>
+                  </div>
+                  <div class="stat-content">
+                    <h3 id="totalWords">0</h3>
+                    <p>Palavras Aprendidas</p>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="stat-card">
+                  <div class="stat-icon">
+                    <i class="bi bi-calendar-check"></i>
+                  </div>
+                  <div class="stat-content">
+                    <h3 id="streakDays">0</h3>
+                    <p>Dias de Sequência</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Abas de Navegação -->
+          <div class="profile-tabs">
+            <ul class="nav nav-tabs" id="profileTabs" role="tablist">
+              <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="history-tab" data-bs-toggle="tab" data-bs-target="#history" type="button" role="tab">
+                  <i class="bi bi-clock-history me-2"></i>
+                  Histórico
+                </button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button class="nav-link" id="favorites-tab" data-bs-toggle="tab" data-bs-target="#favorites" type="button" role="tab">
+                  <i class="bi bi-heart me-2"></i>
+                  Favoritos
+                </button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button class="nav-link" id="settings-tab" data-bs-toggle="tab" data-bs-target="#settings" type="button" role="tab">
+                  <i class="bi bi-gear me-2"></i>
+                  Configurações
+                </button>
+              </li>
+            </ul>
+
+            <div class="tab-content" id="profileTabsContent">
+              
+              <!-- Aba Histórico -->
+              <div class="tab-pane fade show active" id="history" role="tabpanel">
+                <div class="tab-content-header">
+                  <h3>Histórico de Atividades</h3>
+                  <button class="btn btn-outline-danger btn-sm" onclick="clearHistory()">
+                    <i class="bi bi-trash me-1"></i>
+                    Limpar Histórico
+                  </button>
+                </div>
+                <div class="history-list" id="historyList">
+                  <!-- Histórico será carregado via JavaScript -->
+                  <div class="loading-state">
+                    <div class="spinner-border text-primary" role="status">
+                      <span class="visually-hidden">Carregando...</span>
+                    </div>
+                    <p>Carregando histórico...</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Aba Favoritos -->
+              <div class="tab-pane fade" id="favorites" role="tabpanel">
+                <div class="tab-content-header">
+                  <h3>Palavras Favoritas</h3>
+                  <span class="badge bg-primary" id="favoritesCount">0 favoritos</span>
+                </div>
+                <div class="favorites-grid" id="favoritesGrid">
+                  <div class="empty-state">
+                    <i class="bi bi-heart"></i>
+                    <h4>Nenhum favorito ainda</h4>
+                    <p>Adicione palavras ao seus favoritos para vê-las aqui</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Aba Configurações -->
+              <div class="tab-pane fade" id="settings" role="tabpanel">
+                <div class="tab-content-header">
+                  <h3>Configurações da Conta</h3>
+                </div>
+                <div class="settings-content">
+                  <div class="setting-group">
+                    <h5>Preferências de Idioma</h5>
+                    <div class="setting-item">
+                      <label for="defaultSourceLang">Idioma de Origem Padrão</label>
+                      <select class="form-select" id="defaultSourceLang">
+                        <option value="en">Inglês</option>
+                        <option value="pt">Português</option>
+                        <option value="es">Espanhol</option>
+                        <option value="fr">Francês</option>
+                      </select>
+                    </div>
+                    <div class="setting-item">
+                      <label for="defaultTargetLang">Idioma de Destino Padrão</label>
+                      <select class="form-select" id="defaultTargetLang">
+                        <option value="pt">Português</option>
+                        <option value="en">Inglês</option>
+                        <option value="es">Espanhol</option>
+                        <option value="fr">Francês</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="setting-group">
+                    <h5>Notificações</h5>
+                    <div class="setting-item">
+                      <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="dailyWordNotifications">
+                        <label class="form-check-label" for="dailyWordNotifications">
+                          Receber notificações da palavra do dia
+                        </label>
+                      </div>
+                    </div>
+                    <div class="setting-item">
+                      <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="translationReminders">
+                        <label class="form-check-label" for="translationReminders">
+                          Lembretes para praticar tradução
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="setting-group">
+                    <h5>Privacidade</h5>
+                    <div class="setting-item">
+                      <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="publicProfile">
+                        <label class="form-check-label" for="publicProfile">
+                          Perfil público
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="setting-actions">
+                    <button class="btn btn-primary" onclick="saveSettings()">
+                      <i class="bi bi-check-lg me-1"></i>
+                      Salvar Configurações
+                    </button>
+                    <button class="btn btn-outline-secondary" onclick="resetSettings()">
+                      <i class="bi bi-arrow-clockwise me-1"></i>
+                      Restaurar Padrões
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Editar Perfil -->
+  <div class="modal fade" id="editProfileModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Editar Perfil</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="editProfileForm">
+            <div class="mb-3">
+              <label for="editName" class="form-label">Nome</label>
+              <input type="text" class="form-control" id="editName" value="<%= user.name %>">
+            </div>
+            <div class="mb-3">
+              <label for="editEmail" class="form-label">Email</label>
+              <input type="email" class="form-control" id="editEmail" value="<%= user.email %>">
+            </div>
+            <div class="mb-3">
+              <label for="currentPassword" class="form-label">Senha Atual</label>
+              <input type="password" class="form-control" id="currentPassword" placeholder="Digite sua senha atual">
+            </div>
+            <div class="mb-3">
+              <label for="newPassword" class="form-label">Nova Senha</label>
+              <input type="password" class="form-control" id="newPassword" placeholder="Digite uma nova senha">
+            </div>
+            <div class="mb-3">
+              <label for="confirmPassword" class="form-label">Confirmar Nova Senha</label>
+              <input type="password" class="form-control" id="confirmPassword" placeholder="Confirme a nova senha">
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-primary" onclick="updateProfile()">Salvar Alterações</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/profile.js"></script>
+  <script src="/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

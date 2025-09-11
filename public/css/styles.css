@@ -5,232 +5,487 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: "Poppins";
+  font-family: "Poppins", sans-serif;
 }
 
 body {
-  font-family: Verdana, Geneva, Tahoma, sans-serif;
+  font-family: "Roboto", sans-serif;
   margin: 0;
   padding: 0;
-  background-color: #f5f5f5;
-  font-size: 18px;
+  background-color: #f0f2f5;
+  font-size: 16px;
+  color: #333;
 }
 
 p {
-  font-size: 18px;
-  line-height: 1.5;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #555;
 }
 
-/* card styles */
+h3 {
+  font-weight: 600;
+  color: #2c3e50;
+}
 
+/* Base Card Styles */
 .card {
-  background-color: #f5f5f5;
-  padding: 20px;
-  animation: fadeIn 0.5s ease-out;
-  /* border: 80px solid #000; */
-}
-.row {
-  /* border: 0.2px solid rgb(15, 13, 13);*/
-}
-.card mt-3 {
-  border: 0.2px solid rgb(15, 13, 13);
-}
-
-.card-header {
-  font-size: 1.5rem;
-  font-weight: bold;
-  animation: slideIn 0.5s ease-out;
-  border: 0.2px solid rgb(15, 13, 13);
-}
-
-.card-body {
-  /*car do botão de sortear(ao redor dele)*/
-  font-size: 1.2rem;
-  animation: slideIn 0.5s ease-out;
-  /*border: 0.2px solid gray;*/
-}
-
-.word-day {
-  /*Palavra sorteada*/
-  font-family: Times New Roman;
-  font-size: 40px;
-  /*border: 0.2px solid gray;*/
-}
-
-.card-word-of-day {
-  border: 0.2px solid black;
-}
-
-/* Details */
-#player-audio {
-  cursor: pointer;
-}
-
-.hidden {
-  display: none;
-}
-
-#copyButton {
-  cursor: pointer;
-}
-
-#copyButton {
-  font-size: 20px;
-}
-
-.text-input {
-  font-size: 23px; /* Defina o tamanho da fonte desejado */
-  font-family: "Poppins";
-}
-
-.ms-auto {
-  margin-left: auto !important;
-}
-
-.nav-item.nav-link {
-  color: #fff !important;
-  margin: 0 10px;
-  transition: all 0.3s ease;
-  font-family: "Roboto";
-  text-transform: uppercase;
-  text-align: center;
-  font-size: 16px;
-}
-
-.nav-item.nav-link:hover {
-  color: #5582ed !important;
-  transform: translateY(-2px);
-}
-
-.user-name {
-  color: #FCEC17 !important;
-  font-weight: bold;
-}
-
-.history-link {
-  position: relative;
-}
-
-.history-link::after {
-  content: '';
-  position: absolute;
-  bottom: -5px;
-  left: 0;
-  width: 0;
-  height: 2px;
-  background-color: #5582ed;
-  transition: width 0.3s ease;
-}
-
-.history-link:hover::after {
-  width: 100%;
-}
-
-.card {
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  background-color: #ffffff;
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.08);
   transition: all 0.3s ease;
 }
 
 .card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
 }
 
-/* Estilos para a página de histórico */
-.table {
-  margin-bottom: 0;
+/* Main Container and Layout */
+.main {
+  min-height: 85vh;
+  display: flex;
+  align-items: flex-start;
 }
 
-.table th {
-  border-top: none;
-  font-weight: 600;
-  text-transform: uppercase;
-  font-size: 0.875rem;
-  color: #6c757d;
+/* Container para as divs laterais */
+.col-lg-5 {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem; /* Espaçamento consistente entre as divs */
+  position: relative; /* Para controle de posicionamento */
 }
 
-.table td {
-  vertical-align: middle;
+.container.my-5 {
+  padding-top: 3rem;
+  padding-bottom: 3rem;
 }
 
-.badge {
-  padding: 0.5em 0.75em;
-  font-weight: 500;
+/* Input e Botão de Busca */
+/* Input e Botão de Busca */
+.input-group-lg > .form-control {
+  font-size: 1.15rem;
+  padding: 0.75rem 1.25rem;
+  border-top-left-radius: 2.5rem !important; /* Arredonda o canto superior esquerdo */
+  border-bottom-left-radius: 2.5rem !important; /* Arredonda o canto inferior esquerdo */
 }
 
-.btn-sm {
-  padding: 0.25rem 0.5rem;
-  font-size: 0.875rem;
+.input-group-lg > .btn {
+  font-size: 1.15rem;
+  padding: 0.75rem 1.25rem;
+  width: auto;
+  border-top-right-radius: 2.5rem !important; /* Arredonda o canto superior direito */
+  border-bottom-right-radius: 2.5rem !important; /* Arredonda o canto inferior direito */
 }
 
-.history-empty {
-  padding: 3rem 0;
-  text-align: center;
-  color: #6c757d;
+/* Remove a borda arredondada entre o campo de busca e o botão */
+.input-group > .rounded-start {
+  border-top-right-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
 }
 
-.history-empty i {
-  font-size: 3rem;
-  margin-bottom: 1rem;
+.input-group > .rounded-end {
+  border-top-left-radius: 0 !important;
+  border-bottom-left-radius: 0 !important;
 }
 
-/* Estilos para o verificador de pronúncia */
-.pronunciation-check {
-  background-color: white;
-  padding: 25px;
-  border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  margin-top: 20px;
+.btn-primary {
+  background-color: #3498db;
+  border-color: #3498db;
+  transition: all 0.3s ease;
 }
 
-.pronunciation-check h4 {
-  color: #021134;
-  margin-bottom: 20px;
+.btn-primary:hover {
+  background-color: #2980b9;
+  border-color: #2980b9;
+}
+/* Seções de Informação */
+.info-section {
+  padding: 1.8rem;
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  margin-bottom: 1.5rem;
+  transition: all 0.3s ease;
 }
 
-#startRecording, #stopRecording {
-  padding: 10px 20px;
-  font-size: 16px;
+.info-section:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
-#startRecording {
-  background-color: #021134;
-  border-color: #021134;
+.info-section h3 {
+  font-size: 1.4rem;
+  color: #34495e;
+  margin-bottom: 1.2rem;
+  display: flex;
+  align-items: center;
 }
 
-#startRecording:hover {
-  background-color: #0a2468;
-  border-color: #0a2468;
+.info-section h3 img {
+  filter: invert(30%) sepia(30%) saturate(600%) hue-rotate(180deg) brightness(90%);
 }
 
-#recordingStatus {
-  font-size: 16px;
+.info-section p.lead {
+  font-size: 1rem;
   color: #666;
+  line-height: 1.7;
 }
 
-.progress {
-  height: 10px;
-  border-radius: 5px;
-  background-color: #e9ecef;
+/* Card da Palavra do Dia */
+.card-word-of-day {
+  background: linear-gradient(145deg, #e0efff, #ffffff);
+  padding: 1.5rem;
+  position: sticky;
+  top: 100px; /* Fica fixo a 100px do topo */
+  margin-bottom: 2rem; /* Espaçamento fixo abaixo */
+  z-index: 10; /* Prioridade alta */
+  max-height: calc(100vh - 120px); /* Limita altura */
+ /* overflow-y: auto;  Scroll interno se necessário */
 }
 
-.progress-bar {
-  transition: width 0.3s ease;
+
+.card-word-of-day .card-title {
+  font-size: 1.25rem;
+  color: #0d47a1;
+  margin-bottom: 1.8rem;
 }
 
-#pronunciationResult {
-  background-color: white;
+.info-label {
+  font-weight: 600;
+  color: #4a698a;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.word-display {
+  font-family: 'Georgia', serif;
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: #000000;
+  line-height: 1.2;
+}
+
+.phonetic-display {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 1.1rem;
+  color: #666666;
+  font-style: normal;
+}
+
+.card-word-of-day .card.bg-light {
+  background-color: #f8fcff !important;
+  border: 1px solid #dbe9f5 !important;
+  border-radius: 10px;
+  padding: 1rem;
+}
+
+.definition-text,
+.translation-text {
+  font-size: 0.95rem;
+  color: #444;
+  line-height: 1.6;
+}
+
+/* Botão de Sorteio dentro do card da palavra do dia */
+.raffle-btn {
+  padding: 16px 28px;
+  font-size: 1.3rem;
+  font-weight: 600;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 280px;
+  margin: 0 auto;
+  background-color: #4a698a; /* azul médio inspirado na paleta */
+  border: none;
+  color: #ffffff;
+  cursor: pointer;
+  box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+  transition: all 0.3s ease;
+}
+
+/* Efeito hover no botão de sorteio */
+.raffle-btn:hover {
+  background-color: #2c4e6d; /* azul mais escuro no hover */
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
+
+/* Responsividade para o botão de sorteio */
+@media (max-width: 575.98px) {
+  .raffle-btn {
+    font-size: 1.15rem;
+    padding: 12px 20px;
+  }
+}
+
+.btn-info {
+  background-color: #17a2b8;
+  border-color: #17a2b8;
+}
+
+.btn-info:hover {
+  background-color: #138496;
+  border-color: #117a8b;
+}
+
+/* Responsividade */
+@media (max-width: 1199.98px) {
+  .col-lg-6, .col-lg-5 {
+    width: 100%;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+  .card-word-of-day {
+    position: static;
+    margin-top: 2rem;
+    margin-bottom: 2rem; /* Mantém espaçamento mesmo quando não sticky */
+  }
+}
+
+@media (max-width: 991.98px) {
+  .col-md-7, .col-md-5 {
+    width: 100%;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+  .card-word-of-day {
+    position: static;
+    margin-top: 2rem;
+    margin-bottom: 2rem; /* Mantém espaçamento consistente */
+  }
+  .info-section {
+    padding: 1.2rem;
+  }
+  .info-section h3 {
+    font-size: 1.3rem;
+  }
+  .form-control-lg {
+    font-size: 1rem;
+  }
+  .input-group-lg > .btn {
+    font-size: 1rem;
+    padding: 0.6rem 1.2rem;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .container.my-5 {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+  }
+  
+  .main {
+    min-height: auto;
+  }
+  
+  .info-section {
+    padding: 1rem;
+    margin-bottom: 1rem;
+  }
+  
+  .info-section h3 {
+    font-size: 1.2rem;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .info-section h3 img {
+    margin-bottom: 0.5rem;
+  }
+  
+  .input-group-lg > .form-control {
+    font-size: 1rem;
+    padding: 0.6rem 1rem;
+  }
+  
+  .input-group-lg > .btn {
+    font-size: 1rem;
+    padding: 0.6rem 1rem;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .word-display {
+    font-size: 1.8rem;
+  }
+  .phonetic-display {
+    font-size: 1rem;
+  }
+  .info-label {
+    font-size: 0.85rem;
+  }
+  .definition-text, .translation-text {
+    font-size: 0.88rem;
+  }
+  .raffle-btn {
+    font-size: 1.1rem;
+    padding: 12px 20px;
+  }
+}
+
+/* Responsividade para páginas de autenticação */
+@media (max-width: 768px) {
+  .container.mt-5 {
+    padding: 1rem;
+  }
+  
+  .col-lg-6, .col-md-8, .col-sm-10 {
+    width: 100%;
+  }
+  
+  .card-body {
+    padding: 1.5rem;
+  }
+  
+  h2 {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .container.mt-5 {
+    padding: 0.5rem;
+    margin-top: 1rem !important;
+  }
+  
+  .card-body {
+    padding: 1rem;
+  }
+  
+  h2 {
+    font-size: 1.3rem;
+  }
+  
+  .form-control {
+    font-size: 16px; /* Evita zoom no iOS */
+  }
+  
+  .btn {
+    font-size: 1rem;
+    padding: 0.75rem;
+  }
+}
+
+/* Estilos para feedback de pronúncia melhorado */
+.pronunciation-feedback {
+  background: linear-gradient(145deg, #f8f9fa, #e9ecef);
+  border-radius: 15px;
+  padding: 20px;
+  margin: 20px 0;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.attempts-history {
+  background: white;
+  border-radius: 10px;
   padding: 15px;
-  border-radius: 8px;
-  border: 1px solid #dee2e6;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 
-.recording-animation {
+.attempt-item {
+  background: #f8f9fa;
+  border-left: 4px solid #007bff !important;
+  transition: all 0.3s ease;
+}
+
+.attempt-item:hover {
+  background: #e3f2fd;
+  transform: translateX(5px);
+}
+
+.score-breakdown {
+  background: white;
+  border-radius: 10px;
+  padding: 15px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.score-item {
+  margin-bottom: 15px;
+}
+
+.score-item span {
+  font-weight: 600;
+  color: #495057;
+  display: block;
+  margin-bottom: 5px;
+}
+
+.pronunciation-tips {
+  background: white;
+  border-radius: 10px;
+  padding: 15px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.tip-item {
+  background: #e8f5e8;
+  border-left: 3px solid #28a745;
+  padding: 8px 12px;
+  border-radius: 5px;
+  font-size: 0.9rem;
+}
+
+.result-card {
+  background: linear-gradient(135deg, #fff, #f8f9fa);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+  border: none !important;
+}
+
+.recording-status.listening {
+  color: #007bff;
+  font-weight: 600;
   animation: pulse 1.5s infinite;
 }
 
-@keyframes pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.1); }
-  100% { transform: scale(1); }
+.recording-status.error {
+  color: #dc3545;
+  font-weight: 600;
 }
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+
+.interim-result {
+  background: #fff3cd;
+  border: 1px solid #ffeaa7;
+  border-radius: 5px;
+  padding: 5px 10px;
+  margin: 5px 0;
+}
+
+/* Melhorias para barras de progresso */
+.progress {
+  background-color: #e9ecef;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  transition: width 0.6s ease;
+  border-radius: 10px;
+}
+
+/* Responsividade para feedback de pronúncia */
+@media (max-width: 768px) {
+  .pronunciation-feedback {
+    padding: 15px;
+    margin: 15px 0;
+  }
+  
+  .score-breakdown,
+  .pronunciation-tips {
+    margin-bottom: 15px;
+  }
+  
+  .attempt-item {
+    font-size: 0.9rem;
+  }
+}
+

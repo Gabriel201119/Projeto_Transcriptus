@@ -3,6 +3,7 @@ const router = express.Router();
 const { PrismaClient } = require('@prisma/client');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const authMiddleware = require('../middleware/auth.middleware');
 
 const prisma = new PrismaClient();
 
@@ -67,6 +68,28 @@ router.post('/login', async (req, res) => {
 router.get('/logout', (req, res) => {
   req.session.destroy();
   res.redirect('/login');
+});
+
+// Rota do perfil (requer autenticação)
+router.get('/profile', authMiddleware, async (req, res) => {
+  try {
+    // Busca dados atualizados do usuário
+    const user = await prisma.user.findUnique({
+      where: { id: req.userId },
+      select: { id: true, name: true, email: true, createdAt: true }
+    });
+    
+    if (!user) {
+      req.flash('error', 'Usuário não encontrado');
+      return res.redirect('/login');
+    }
+    
+    res.render('profile', { user });
+  } catch (error) {
+    console.error('Erro ao carregar perfil:', error);
+    req.flash('error', 'Erro ao carregar perfil');
+    res.redirect('/');
+  }
 });
 
 module.exports = router; 

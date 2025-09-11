@@ -7,6 +7,7 @@ const jwt = require("jsonwebtoken");
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
+const geminiRoutes = require('./routes/gemini.routes');
 const routerSave = require("./routes/wordDetails.routes");
 const routerTranslator = require("./routes/translator.routes");
 const routerApp = require("./routes/app.routes");
@@ -48,6 +49,7 @@ app.use(async (req, res, next) => {
         },
       });
       res.locals.user = user;
+      req.user = user;
     } catch (err) {
       res.locals.user = null;
       req.session.token = null;
@@ -55,7 +57,6 @@ app.use(async (req, res, next) => {
   } else {
     res.locals.user = null;
   }
-  console.log("teste");
   next();
 });
 
@@ -63,8 +64,10 @@ app.use("/", routerApp);
 app.use(routerSave, routerTranslator, routeContext);
 app.use("/", authRoutes);
 app.use("/", historyRoutes);
+app.use('/api/gemini', geminiRoutes);
 
 app.listen(port, (err) => {
   if (err) console.log(err);
   console.log("Server listening on PORT", port);
+  console.log("http://localhost:3000");
 });

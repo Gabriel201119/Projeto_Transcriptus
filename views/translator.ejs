@@ -1,38 +1,164 @@
 <%- include("./partials/header.ejs") %>
-    <%- include("./partials/navbar-white.ejs") %>
-        <link rel="stylesheet" href="/css/translator.css">
+<%- include("./partials/navbar-white.ejs") %>
+<link rel="stylesheet" href="/css/translator.css">
 
-        <body>
-            <form id="translationForm" action="/significado" method="post">
-                <div class="container">
-                    <br>
-                    <h1>Tradutor de Inglês para Português</h1>
-                    <div class="content">
-                        <div class="divSelects">
-                            <div class="language">
-                                <img src="/img/eua-icon.svg" width="30" height="30" alt="Ícone Inglês"> INGLÊS
-                            </div>
-                            <div class="language">
-                                <img src="/img/brazil-icon.svg" width="30" height="30" alt="Ícone Inglês"> PORTUGUÊS
-                            </div>
-                        </div>
-                        <div class="divTextareas">
-                            <textarea id="inputText" name="texts" rows="8"
-                                placeholder="Escreva ou cole seu texto aqui"></textarea>
-                            <textarea class="output-block" id="output" rows="8" placeholder="Tradução"
-                                disabled></textarea>
-                        </div>
-                        <button id="traduzir" type="submit">TRADUZIR</button>
-                        <button class="btn btn-primary clear-button" type="reset" onclick="clearTextArea()">
-                            <b>
-                                <i class="bi bi-trash"></i>
-                                LIMPAR
-                            </b>
-                        </button>
+<body>
+  <div class="translator-container">
+    <div class="container-fluid">
+      <div class="row justify-content-center">
+        <div class="col-lg-10 col-xl-8">
+          
+          <!-- Header do Tradutor -->
+          <div class="translator-header">
+            <div class="header-content">
+              <h1 class="translator-title">
+                <i class="bi bi-translate me-3"></i>
+                Tradutor Inteligente
+              </h1>
+              <p class="translator-subtitle">
+                Traduza textos entre diferentes idiomas com precisão e rapidez
+              </p>
+            </div>
+          </div>
+
+          <!-- Formulário de Tradução -->
+          <form id="translationForm" action="/significado" method="post">
+            <div class="translator-card">
+              
+              <!-- Seletor de Idiomas -->
+              <div class="language-selector-section">
+                <div class="language-selector-container">
+                  <div id="sourceLanguage" class="language-selector">
+                    <div class="language-flag">
+                      <img id="sourceFlag" src="/img/eua-icon.svg" width="32" height="32" alt="Ícone Inglês">
                     </div>
+                    <div class="language-info">
+                      <span id="sourceText" class="language-name">INGLÊS</span>
+                      <span class="language-code">EN</span>
+                    </div>
+                    <i class="bi bi-chevron-down language-arrow"></i>
+                  </div>
+                  
+                  <button type="button" id="switchLanguages" class="switch-languages" title="Inverter idiomas">
+                    <i class="bi bi-arrow-left-right"></i>
+                  </button>
+                  
+                  <div id="targetLanguage" class="language-selector">
+                    <div class="language-flag">
+                      <img id="targetFlag" src="/img/brazil-icon.svg" width="32" height="32" alt="Ícone Português">
+                    </div>
+                    <div class="language-info">
+                      <span id="targetText" class="language-name">PORTUGUÊS</span>
+                      <span class="language-code">PT</span>
+                    </div>
+                    <i class="bi bi-chevron-down language-arrow"></i>
+                  </div>
                 </div>
-            </form>
-        </body>
-        <script src="/js/translator.js"></script>
+              </div>
 
-        </html>
+              <!-- Área de Texto -->
+              <div class="text-area-section">
+                <div class="text-area-container">
+                  <div class="input-area">
+                    <div class="area-header">
+                      <span class="area-label">Texto Original</span>
+                      <div class="area-actions">
+                        <button type="button" class="action-btn" id="clearInputBtn" title="Limpar texto">
+                          <i class="bi bi-x-circle"></i>
+                        </button>
+                        <button type="button" class="action-btn" id="copyInputBtn" title="Copiar texto">
+                          <i class="bi bi-clipboard"></i>
+                        </button>
+                      </div>
+                    </div>
+                    <div class="textarea-wrapper">
+                      <textarea id="inputText" name="texts" rows="8" placeholder="Digite ou cole seu texto aqui para traduzir..."></textarea>
+                      <button type="button" id="micButton" class="mic-button" title="Usar microfone">
+                        <i class="bi bi-mic-fill"></i>
+                      </button>
+                    </div>
+                    <div class="character-count">
+                      <span id="inputCount">0</span> caracteres
+                    </div>
+                  </div>
+                  
+                  <div class="output-area">
+                    <div class="area-header">
+                      <span class="area-label">Tradução</span>
+                      <div class="area-actions">
+                        <button type="button" class="action-btn" id="copyOutputBtn" title="Copiar tradução">
+                          <i class="bi bi-clipboard"></i>
+                        </button>
+                        <button type="button" class="action-btn" id="speakOutputBtn" title="Ouvir tradução">
+                          <i class="bi bi-volume-up"></i>
+                        </button>
+                      </div>
+                    </div>
+                    <div class="textarea-wrapper">
+                      <textarea class="output-block" id="output" rows="8" placeholder="A tradução aparecerá aqui..." disabled></textarea>
+                    </div>
+                    <div class="character-count">
+                      <span id="outputCount">0</span> caracteres
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Status do Microfone -->
+              <div id="micStatus" class="mic-status"></div>
+
+              <!-- Botões de Ação -->
+              <div class="action-buttons">
+                <button id="traduzir" type="submit" class="btn-translate">
+                  <i class="bi bi-translate me-2"></i>
+                  <span>TRADUZIR</span>
+                  <div class="btn-loading d-none">
+                    <div class="spinner-border spinner-border-sm" role="status">
+                      <span class="visually-hidden">Traduzindo...</span>
+                    </div>
+                  </div>
+                </button>
+                <button type="button" class="btn-clear" onclick="clearTextArea()">
+                  <i class="bi bi-trash me-2"></i>
+                  LIMPAR TUDO
+                </button>
+              </div>
+
+              <!-- Inputs Hidden -->
+              <input type="hidden" id="sourceLang" name="sourceLang" value="en">
+              <input type="hidden" id="targetLang" name="targetLang" value="pt">
+            </div>
+          </form>
+
+          <!-- Recursos Adicionais -->
+          <div class="features-section">
+            <div class="row justify-content-center">
+              <div class="col-md-5">
+                <div class="feature-card">
+                  <div class="feature-icon">
+                    <i class="bi bi-mic"></i>
+                  </div>
+                  <h5>Reconhecimento de Voz</h5>
+                  <p>Use sua voz para inserir texto rapidamente</p>
+                </div>
+              </div>
+              <div class="col-md-5">
+                <div class="feature-card">
+                  <div class="feature-icon">
+                    <i class="bi bi-lightning"></i>
+                  </div>
+                  <h5>Tradução Rápida</h5>
+                  <p>Resultados instantâneos e precisos</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/translator.js"></script>
+  <script src="/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

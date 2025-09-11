@@ -35,23 +35,96 @@ p {
   }
 }
 
-/* Phrases */
-.phrase-container {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 10px;
-} 
+.english-phrase,
+.portuguese-phrase {
+  background-color: #f1f1f1;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 16px;
+}
 
 .english-phrase {
-  width: 45%;
   background-color: #e8f3fd;
-  padding: 10px;
-  border-radius: 10px;
 }
 
 .portuguese-phrase {
-  width: 45%;
   background-color: #fef3e8;
-  padding: 10px;
-  border-radius: 10px;
+}
+
+.phrase-header-row .language-label {
+  font-size: 18px;
+}
+
+.hr-dashed {
+  border-top: 2px dashed #111;
+  margin: 20px 0;
+}
+
+.arrow-label {
+  font-size: 24px;
+  color: #242424;
+}
+
+.practice-button {
+  width: 150px;
+  padding: 8px 16px;
+  font-size: 14px;
+}
+
+.practice-button:hover {
+  opacity: 0.9;
+}
+
+/* Responsividade para a página de contexto */
+@media (max-width: 768px) {
+  .container.main {
+    padding: 1rem;
+  }
+  
+  .card {
+    margin-bottom: 1rem;
+  }
+  
+  .input-group {
+    flex-direction: column;
+  }
+  
+  .input-total-rounded {
+    border-radius: 15px;
+    margin-bottom: 10px;
+  }
+  
+  .button-rounded {
+    width: 100%;
+    border-radius: 15px;
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 576px) {
+  .container.main {
+    padding: 0.5rem;
+  }
+  
+  h1 {
+    font-size: 1.5rem;
+  }
+  
+  .english-phrase, .portuguese-phrase {
+    font-size: 14px;
+    padding: 8px;
+  }
+  
+  .phrase-header-row .language-label {
+    font-size: 16px;
+  }
+  
+  .arrow-label {
+    font-size: 20px;
+  }
+  
+  .practice-button {
+    width: 100%;
+    font-size: 12px;
+  }
 }

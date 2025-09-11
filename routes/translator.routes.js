@@ -2,24 +2,25 @@ const express = require("express");
 const router = express.Router();
 const translatorController = require("../controllers/translator.controller");
 const bodyParser = require("body-parser");
+const authMiddleware = require('../middleware/auth.middleware');
 
 router.use(bodyParser.urlencoded({ extended: false }));
 router.use(bodyParser.json());
 
 // route to translator
-router.get("/tradutor", (req, res) => {
+router.get("/tradutor", authMiddleware, (req, res) => {
   res.render("translator");
 });
 
-router.post("/significado", async (req, res) => {
+router.post("/significado", authMiddleware, async (req, res) => {
   try {
-    const text = req.body.texts;
+    const { texts, sourceLang, targetLang } = req.body;
     const userId = res.locals.user?.id;
-    const translatedText = await translatorController.translateText(text, userId);
+    const translatedText = await translatorController.translateText(texts, sourceLang, targetLang, userId);
     res.json({ translatedText });
   } catch (err) {
-    console.error(err);
-    res.render("error");
+    console.error("Erro na tradução:", err);
+    res.json({ translatedText: "Erro ao traduzir. Por favor, tente novamente." });
   }
 });
 

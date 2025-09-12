@@ -42,6 +42,7 @@ const reverso = new Reverso({
 });
 const dictionary = require("./dictionary.controller.js");
 const gAudio = require("./audioController.js");
+const { translate } = require("bing-translate-api");
 
 // Cache system
 const cache = new Map();
@@ -109,10 +110,17 @@ const generatePhrases = async (word) => {
 
       console.log("Exemplos encontrados:", response.examples.length);
       
-      const phrases = response.examples.map((example) => ({
-        english: example.source || "",
-        portuguese: example.target || ""
-      })).filter(phrase => phrase.english && phrase.portuguese);
+      const phrases = response.examples.map((example) => {
+        // Verificar se example é válido
+        if (!example || typeof example !== 'object') {
+          return null;
+        }
+        
+        return {
+          english: example.source || "",
+          portuguese: example.target || ""
+        };
+      }).filter(phrase => phrase && phrase.english && phrase.portuguese);
 
       console.log("Frases processadas:", phrases.length);
       return phrases;
@@ -133,6 +141,17 @@ const generatePhrases = async (word) => {
   return [];
 };
 
+// Fallback translation using Bing Translate
+const fallbackTranslate = async (word) => {
+  try {
+    const result = await translate(word, null, 'pt');
+    return [result.translation];
+  } catch (error) {
+    console.warn(`Erro no fallback de tradução para ${word}:`, error.message);
+    return ["Tradução indisponível"];
+  }
+};
+
 // Generate translations to Portuguese for a given word
 const generateTranslate = async (word) => {
   try {
@@ -141,11 +160,24 @@ const generateTranslate = async (word) => {
       "english",
       "portuguese"
     );
+    
+    // Verificar se a resposta é válida
+    if (!response) {
+      console.warn("Resposta vazia da API de tradução para:", word);
+      return await fallbackTranslate(word);
+    }
+    
+    // Verificar se translations existe e é um array
+    if (!response.translations || !Array.isArray(response.translations)) {
+      console.warn("Formato de resposta inválido para tradução:", response);
+      return await fallbackTranslate(word);
+    }
+    
     const translations = [...new Set(response.translations)];
-    return translations;
+    return translations.length > 0 ? translations : await fallbackTranslate(word);
   } catch (error) {
     console.error(`Erro ao traduzir palavra: ${word}. Erro: ${error.message}`);
-    return ["Tradução indisponível"];
+    return await fallbackTranslate(word);
   }
 };
 

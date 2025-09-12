@@ -85,7 +85,7 @@ const hasPhrases = async (word) => {
 const generatePhrases = async (word) => {
   // Em produção, usar frases estáticas como fallback
   if (process.env.NODE_ENV === 'production') {
-    console.log("Modo produção: usando frases estáticas para:", word);
+    console.log("🎯 MODO PRODUÇÃO ATIVO: usando frases estáticas para:", word);
     return generateStaticPhrases(word);
   }
 
@@ -239,7 +239,7 @@ const getStaticTranslations = (word) => {
 const generateTranslate = async (word) => {
   // Em produção, priorizar Bing Translate que é mais confiável
   if (process.env.NODE_ENV === 'production') {
-    console.log("Modo produção: usando Bing Translate para:", word);
+    console.log("🚀 MODO PRODUÇÃO ATIVO: usando Bing Translate para:", word);
     return await fallbackTranslate(word);
   }
 

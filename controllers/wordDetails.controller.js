@@ -42,7 +42,6 @@ const reverso = new Reverso({
 });
 const dictionary = require("./dictionary.controller.js");
 const gAudio = require("./audioController.js");
-const { translate } = require("bing-translate-api");
 
 // Cache system
 const cache = new Map();
@@ -83,27 +82,14 @@ const hasPhrases = async (word) => {
 
 // Generate phrases in English and Portuguese for a given word
 const generatePhrases = async (word) => {
-  // Em produção, usar frases estáticas como fallback
-  if (process.env.NODE_ENV === 'production') {
-    console.log("🎯 MODO PRODUÇÃO ATIVO: usando frases estáticas para:", word);
-    return generateStaticPhrases(word);
-  }
-
   let retryCount = 0;
-  const maxRetries = 2; // Reduzido para produção
+  const maxRetries = 3;
 
   while (retryCount < maxRetries) {
     try {
       console.log(`Tentativa ${retryCount + 1} de buscar frases para:`, word);
-      
-      // Timeout mais curto para produção
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Timeout')), 15000)
-      );
-      
-      const apiPromise = reverso.getContext(word, "english", "portuguese");
-      const response = await Promise.race([apiPromise, timeoutPromise]);
-      
+      const response = await reverso.getContext(word, "english", "portuguese");
+      console.log(response)
       if (!response) {
         console.warn("Resposta vazia do Reverso API");
         retryCount++;
@@ -118,30 +104,17 @@ const generatePhrases = async (word) => {
 
       if (!response.examples || !Array.isArray(response.examples)) {
         console.warn("Nenhum exemplo encontrado para a palavra:", word);
-        return generateStaticPhrases(word);
+        return [];
       }
 
       console.log("Exemplos encontrados:", response.examples.length);
       
-      const phrases = response.examples.map((example) => {
-        // Verificar se example é válido
-        if (!example || typeof example !== 'object') {
-          return null;
-        }
-        
-        return {
-          english: example.source || "",
-          portuguese: example.target || ""
-        };
-      }).filter(phrase => phrase && phrase.english && phrase.portuguese);
+      const phrases = response.examples.map((example) => ({
+        english: example.source || "",
+        portuguese: example.target || ""
+      })).filter(phrase => phrase.english && phrase.portuguese);
 
       console.log("Frases processadas:", phrases.length);
-      
-      // Se não conseguiu frases suficientes, usar fallback
-      if (phrases.length < 2) {
-        return generateStaticPhrases(word);
-      }
-      
       return phrases;
     } catch (err) {
       console.error(`Erro na tentativa ${retryCount + 1}:`, err.message);
@@ -149,124 +122,30 @@ const generatePhrases = async (word) => {
       
       if (retryCount === maxRetries) {
         console.error("Número máximo de tentativas atingido para:", word);
-        return generateStaticPhrases(word);
+        return [];
       }
       
-      // Espera 1 segundo antes de tentar novamente
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Espera 2 segundos antes de tentar novamente
+      await new Promise(resolve => setTimeout(resolve, 2000));
     }
   }
   
-  return generateStaticPhrases(word);
-};
-
-// Gerar frases estáticas como fallback
-const generateStaticPhrases = (word) => {
-  const staticPhrases = {
-    'cat': [
-      { english: "The cat is sleeping", portuguese: "O gato está dormindo" },
-      { english: "I love my cat", portuguese: "Eu amo meu gato" }
-    ],
-    'dog': [
-      { english: "The dog is playing", portuguese: "O cachorro está brincando" },
-      { english: "My dog is very friendly", portuguese: "Meu cachorro é muito amigável" }
-    ],
-    'house': [
-      { english: "This is my house", portuguese: "Esta é minha casa" },
-      { english: "The house is beautiful", portuguese: "A casa é bonita" }
-    ],
-    'car': [
-      { english: "I drive my car", portuguese: "Eu dirijo meu carro" },
-      { english: "The car is fast", portuguese: "O carro é rápido" }
-    ],
-    'book': [
-      { english: "I read a book", portuguese: "Eu leio um livro" },
-      { english: "This book is interesting", portuguese: "Este livro é interessante" }
-    ]
-  };
-
-  return staticPhrases[word.toLowerCase()] || [
-    { english: `The ${word} is important`, portuguese: `O ${word} é importante` },
-    { english: `I like ${word}`, portuguese: `Eu gosto de ${word}` }
-  ];
-};
-
-// Fallback translation using Bing Translate
-const fallbackTranslate = async (word) => {
-  try {
-    const result = await translate(word, null, 'pt');
-    const translation = result.translation;
-    
-    // Gerar múltiplas traduções baseadas na palavra
-    const translations = [translation];
-    
-    // Adicionar traduções adicionais baseadas em palavras comuns
-    const additionalTranslations = getAdditionalTranslations(word);
-    translations.push(...additionalTranslations);
-    
-    // Remover duplicatas
-    return [...new Set(translations)];
-  } catch (error) {
-    console.warn(`Erro no fallback de tradução para ${word}:`, error.message);
-    return getStaticTranslations(word);
-  }
-};
-
-// Obter traduções adicionais baseadas na palavra
-const getAdditionalTranslations = (word) => {
-  const wordTranslations = {
-    'cat': ['gato', 'felino', 'bichano'],
-    'dog': ['cachorro', 'cão', 'canino'],
-    'house': ['casa', 'residência', 'moradia'],
-    'car': ['carro', 'automóvel', 'veículo'],
-    'book': ['livro', 'obra', 'publicação'],
-    'water': ['água', 'líquido'],
-    'food': ['comida', 'alimento', 'refeição'],
-    'love': ['amor', 'carinho', 'afeição'],
-    'happy': ['feliz', 'alegre', 'contente'],
-    'good': ['bom', 'bem', 'ótimo']
-  };
-  
-  return wordTranslations[word.toLowerCase()] || [];
-};
-
-// Traduções estáticas como último recurso
-const getStaticTranslations = (word) => {
-  return [`Tradução de ${word}`, `Significado de ${word}`];
+  return [];
 };
 
 // Generate translations to Portuguese for a given word
 const generateTranslate = async (word) => {
-  // Em produção, priorizar Bing Translate que é mais confiável
-  if (process.env.NODE_ENV === 'production') {
-    console.log("🚀 MODO PRODUÇÃO ATIVO: usando Bing Translate para:", word);
-    return await fallbackTranslate(word);
-  }
-
   try {
     const response = await reverso.getTranslation(
       word,
       "english",
       "portuguese"
     );
-    
-    // Verificar se a resposta é válida
-    if (!response) {
-      console.warn("Resposta vazia da API de tradução para:", word);
-      return await fallbackTranslate(word);
-    }
-    
-    // Verificar se translations existe e é um array
-    if (!response.translations || !Array.isArray(response.translations)) {
-      console.warn("Formato de resposta inválido para tradução:", response);
-      return await fallbackTranslate(word);
-    }
-    
     const translations = [...new Set(response.translations)];
-    return translations.length > 0 ? translations : await fallbackTranslate(word);
+    return translations;
   } catch (error) {
     console.error(`Erro ao traduzir palavra: ${word}. Erro: ${error.message}`);
-    return await fallbackTranslate(word);
+    return ["Tradução indisponível"];
   }
 };
 
@@ -297,7 +176,7 @@ const getInfoWord = async (word) => {
     // Create an object containing all information about the word
     const wordInfo = {
       word: text,
-      audio: audioResult ? "../audio.mp3" : null,
+      audio: audioResult || null,
       translation: translation || ["Tradução indisponível"],
       phrases: Array.isArray(phrasesResult) ? phrasesResult : [],
       ipa: ipa,

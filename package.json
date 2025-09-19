@@ -4,7 +4,7 @@
   "description": "translate your english text into its phonetic transcrition",
   "main": "index.js",
   "scripts": {
-    "start": "node server.js",
+    "start": "node --watch server.js",
     "dev": "nodemon server.js",
     "build": "npm install",
     "postinstall": "npx prisma generate && npx prisma db push",
